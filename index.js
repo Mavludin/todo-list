@@ -29,10 +29,10 @@ $(document).ready(function() {
         $('#weather-image').attr('src', './Assets/bg-image/night.jpg');       
     }
 
-    const createTodoItem = (arr) => {
+    const createTodoItem = arr => {
         arr = JSON.parse(arr);
-        arr.map(item => {
-            var div = document.createElement('div');
+        arr.map((item,pos,arr2) => {
+            let div = document.createElement('div');
             div.className = "todo-item";
             let label = document.createElement('label');
             let input = document.createElement('input');
@@ -49,11 +49,24 @@ $(document).ready(function() {
 
             $('#todo-list-wrapper').append(div);
 
-            if (item.condition == 1) {
-                par.classList.add('todo-item-completed');
-                input.checked = true;
+            input.onchange = e => {
+                if (e.target.checked) {
+                    par.classList.add('todo-item-completed');
+                    item.condition = 1;
+                }
+                else {
+                    par.classList.remove('todo-item-completed');
+                    item.condition = 0;
+                }
             }
-            else par.classList.remove('todo-item-completed');        
+
+            // if (item.condition == 1) {
+            //     par.classList.add('todo-item-completed');
+            //     input.checked = true;
+            // }
+            // else { 
+            //     par.classList.remove('todo-item-completed'); 
+            // }
         });
 
     }
@@ -65,12 +78,60 @@ $(document).ready(function() {
         $('#todo-input-wrapper').css('display', 'block');
         $('#first-name').html(fullName);
     }
-    
-    var majorTodo = localStorage.getItem('major-todo');
+
+    $('#major-todo-checkbox').on('change', function(){
+        if ($(this).is(':checked')) {
+            $('#major-todo-label').addClass('todo-item-completed');
+
+            let todoList = JSON.parse(localStorage['major-todo']);
+            todoList[todoList.length-1].condition = 1;
+            $('#todo-list-wrapper .todo-item:last .todo-text').addClass('todo-item-completed');
+            $('#todo-list-wrapper .todo-item:last input').prop("checked", true);
+            localStorage.setItem('major-todo', JSON.stringify(todoList));
+        }
+        else {
+            let todoList = JSON.parse(localStorage['major-todo']);
+            todoList[todoList.length-1].condition = 0;
+            $('#todo-list-wrapper .todo-item:last .todo-text').removeClass('todo-item-completed');
+            $('#todo-list-wrapper .todo-item:last input').prop("checked", false);
+            $('#major-todo-label').removeClass('todo-item-completed');
+            localStorage.setItem('major-todo', JSON.stringify(todoList)); 
+        }   
+    });
+
+    $('#name-input').keyup(function(e) {
+        if(e.keyCode === 13) {
+            localStorage.setItem('full-name', e.target.value);
+
+            $('#name-input-wrapper').css('display', 'none');
+            $('#todo-input-wrapper').css('display', 'block')
+            $('#first-name').html(e.target.value);
+        }
+    });
+
+    $('#major-todo').keyup(function(e) {
+        if(e.keyCode === 13) {
+
+            $('#major-todo-wrapper').css('display', 'none');
+            $('#major-todo-item').css('display', 'block');
+
+            addToList(e.target.value);
+
+            if ( $('#no-todos').is(':visible') ) {
+                $('#no-todos').hide();
+                let todoList = localStorage.getItem('major-todo');
+                $('#todo-list-wrapper').html('');
+                createTodoItem(todoList);
+                $('#todo-list').show();
+            }   
+                   
+            $('#major-todo-label').html(e.target.value);
+        }
+    });
+
+    let majorTodo = localStorage.getItem('major-todo');
 
     if(majorTodo !== null && majorTodo !== '' && majorTodo !== '[]') {
-        $('#todo-list-wrapper').html('');
-        createTodoItem(majorTodo);
 
         majorTodo = JSON.parse(majorTodo);
         majorTodoLast = majorTodo[majorTodo.length-1];
@@ -81,86 +142,26 @@ $(document).ready(function() {
         if (majorTodoLast.condition == 1) {
             $('#major-todo-label').addClass('todo-item-completed');
             $('#major-todo-checkbox').prop("checked", true);
-        } else $('#major-todo-label').removeClass('todo-item-completed');
-    } else $('#todo-list-wrapper').html('');
-
-    $('#name-input').keyup(function(e) {
-        if(e.keyCode === 13) {
-            localStorage.setItem('full-name', e.target.value);
-
-            $('#name-input-wrapper').css('display', 'none');
-            $('#todo-input-wrapper').css('display', 'block')
-            $('#first-name').html(e.target.value);
         }
-    })
-
-    $('#major-todo').keyup(function(e) {
-        if(e.keyCode === 13) {
-
-            $('#major-todo-wrapper').css('display', 'none');
-            $('#major-todo-item').css('display', 'block');
-
-            addToList(e.target.value);
-
-            console.log($('#todo-text'));
-
-            $('#major-todo-label').html(e.target.value);
-            location.reload();
+        else {
+            $('#major-todo-label').removeClass('todo-item-completed');
+            $('#major-todo-checkbox').prop("checked", false);
         }
-    });
+    }
 
     $('#new-todo').keyup(function(e) {
         if(e.keyCode === 13) {
 
             addToList(e.target.value);
-            location.reload();
+
+            let todoList = localStorage.getItem('major-todo');
+            $('#todo-list-wrapper').html('');
+            createTodoItem(todoList);
+
+            $('#major-todo-label').html(e.target.value);
+            e.target.value = "";
         }
     });    
-
-    $('#major-todo-checkbox').change(function(e) {
-        $('#major-todo-label').toggleClass('todo-item-completed');
-        let todoList = JSON.parse(localStorage['major-todo']);
-
-        todoList.map(item =>{
-            if ( $('#major-todo-label').hasClass("todo-item-completed") && $("#major-todo-label").text() == item.itemName ) {
-                 item.condition = 1;
-            } else if ( !$('#major-todo-label').hasClass("todo-item-completed") && $("#major-todo-label").text() == item.itemName ) {
-                item.condition = 0;
-            }
-        })
-
-        localStorage.setItem('major-todo', JSON.stringify(todoList));
-
-    });
-
-    $('.todo-item input[type="checkbox"]').change(function(e) {
-        $('#todo-list .todo-text').toggleClass('todo-item-completed');
-        let todoList = JSON.parse(localStorage['major-todo']);
-
-        todoList.map(item =>{
-            if ( $('#todo-list .todo-text').hasClass("todo-item-completed") && $("#todo-list .todo-text").text() == item.itemName ) {
-                 item.condition = 1;
-            } else if ( !$('#todo-list .todo-text').hasClass("todo-item-completed") && $("#todo-list .todo-text").text() == item.itemName ) {
-                item.condition = 0;
-            }
-        })
-
-        localStorage.setItem('major-todo', JSON.stringify(todoList));
-
-    });
-
-    $('.delete-icon').click(function() {
-        let todoList = JSON.parse(localStorage['major-todo']);
-
-        todoList.map((item, pos, arr2) => {
-            if ($("#major-todo-label").text() == item.itemName) {
-                arr2.splice(pos, 1);
-            }
-        });
-        localStorage.setItem('major-todo', JSON.stringify(todoList));
-        location.reload();
-    });
-
 
     function addToList (listItem) {
         if (localStorage) {
@@ -177,7 +178,55 @@ $(document).ready(function() {
     }
 
     $('#todos-wrapper h3').click(function(){
-        $('#todo-list').toggle();
-    })
+
+        let todoList = localStorage.getItem('major-todo');
+        if (todoList !== null && todoList !== '' && todoList !== "[]") {
+            $('#todo-list-wrapper').html('');
+            createTodoItem(todoList);
+            $('#todo-list').show();
+            $('#no-todos').hide();
+
+            $('.todo-item .delete-icon').click(function() {
+                let todoList = JSON.parse(localStorage['major-todo']);
+                todoList.map((item, pos, arr2) => {
+                    if ($(this).parent().index() === pos) {
+                        arr2.splice(pos, 1);
+                        $(this).parent().remove();
+                    }
+                });
+                localStorage.setItem('major-todo', JSON.stringify(todoList));
+            });
+        } else {
+            $('#no-todos').css('display', 'flex');
+        }
+        // $('#todo-list').toggle();
+    });
+
+    $("#add-first-todo").click(function(){
+        $('#todo-list').show();
+    });
+
+    $('#major-todo-item .delete-icon').click(function() {
+
+        let todoList = JSON.parse(localStorage['major-todo']);
+        todoList.splice([todoList.length-1]);
+
+        $('#todo-list-wrapper .todo-item:last').remove();
+        $('#major-todo-label').html( $('#todo-list-wrapper .todo-item:last .todo-text').html() );
+        // if ($('#todo-list-wrapper .todo-item:last input').is(':checked')){
+        //     $('#major-todo-label').addClass('todo-item-completed');
+        //     $('#major-todo-checkbox').prop("checked", true);
+        // } else {
+        //     $('#major-todo-label').removeClass('todo-item-completed');
+        //     $('#major-todo-checkbox').prop("checked", false);
+        // }
+        localStorage.setItem('major-todo', JSON.stringify(todoList));
+
+        if ($('#todo-list-wrapper').html() === "") {
+            $('#major-todo-item').hide();
+            $('#major-todo-wrapper').show();
+            $('#major-todo-label').html() = "";
+        }
+    });
 
 });
