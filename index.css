@@ -87,6 +87,7 @@ input {
 
 #major-todo-wrapper {
     display: block;
+    text-align: center;
 }
 
 #major-todo-item {
