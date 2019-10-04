@@ -39,29 +39,58 @@ $(document).ready(function() {
     }
 
     $('#name-input').keyup(function(e) {
-        if(e.keyCode === 13) {
+        if(e.key === 'Enter') {
             localStorage.setItem('full-name', e.target.value);
 
             $('#name-input-wrapper').css('display', 'none');
-            $('#todo-input-wrapper').css('display', 'block')
+            $('#todo-input-wrapper').css('display', 'block');
             $('#first-name').html(e.target.value);
         }
     });
     // Working with name - END
 
     // Working with major todo list - START
+    $('#major-todo').keyup(function(e) {
+        if(e.key === 'Enter') {
+
+            $('#major-todo-wrapper').hide();
+            $('#major-todo-item').fadeIn();
+
+            let majorTodo = {'mainFocus':e.target.value, 'completed': false};
+
+            localStorage.setItem('major-todo', JSON.stringify(majorTodo));
+
+            $('#major-todo-label').html(majorTodo.mainFocus);
+            $('#major-todo-label').removeClass('todo-item-completed');
+            $('#major-todo-checkbox').prop("checked", false);
+        }
+    });
+
     const ifMajorTodoNotEmpty = () => {
 
         let majorTodo = localStorage.getItem('major-todo');
         if ( !($.isEmptyObject(majorTodo)) ){
             majorTodo = JSON.parse(majorTodo);
         }
-
         return majorTodo;
-    }
+    };
+
+    $('#major-todo-checkbox').on('change', function () {
+       if ( $(this).is(':checked') ) {
+           let majorTodo = ifMajorTodoNotEmpty();
+           $('#major-todo-label').addClass('todo-item-completed');
+           majorTodo.completed = true;
+           localStorage.setItem('major-todo', JSON.stringify(majorTodo));
+       } else {
+           let majorTodo = ifMajorTodoNotEmpty();
+           $('#major-todo-label').removeClass('todo-item-completed');
+           majorTodo.completed = false;
+           localStorage.setItem('major-todo', JSON.stringify(majorTodo));
+       }
+
+    });
 
     let majorTodo = ifMajorTodoNotEmpty();
-
     if(majorTodo) {
 
         $('#major-todo-wrapper').hide();
@@ -76,7 +105,7 @@ $(document).ready(function() {
         } else {
 
             $('#major-todo-label').removeClass('todo-item-completed');
-            $('#major-todo-checkbox').prop("checked", false);  
+            $('#major-todo-checkbox').prop("checked", false);
         }
 
     }
@@ -85,36 +114,11 @@ $(document).ready(function() {
 
         localStorage.removeItem('major-todo');
         $('#major-todo-label').html('');
-        $('#major-todo-wrapper').show();
         $('#major-todo-item').hide();
+        $('#major-todo-wrapper').fadeIn();
         $('#major-todo').val('');
     });
 
-    $('#major-todo').keyup(function(e) {
-        if(e.keyCode === 13) {
-
-            $('#major-todo-wrapper').hide();
-            $('#major-todo-item').show();
-
-            let majorTodo = {'mainFocus':e.target.value};
-
-            localStorage.setItem('major-todo', JSON.stringify(majorTodo));
-                   
-            $('#major-todo-label').html(majorTodo.mainFocus);
-        }
-    });
-
-    $('#major-todo-item label').click(function() {
-        if ( $(this).find('input[type="checkbox"]').is(':checked') ) {
-            $('#major-todo-label').addClass('todo-item-completed');
-            majorTodo.completed = true;
-        } else {
-            $('#major-todo-label').removeClass('todo-item-completed');
-            majorTodo.completed = false;
-        }
-
-        localStorage.setItem('major-todo', JSON.stringify(majorTodo));
-    });
     // Working with major todo list - END
 
     // Working with aside todo list - START
@@ -158,10 +162,10 @@ $(document).ready(function() {
             // }
         });
 
-    }
+    };
 
     $('#new-todo').keyup(function(e) {
-        if(e.keyCode === 13) {
+        if(e.key === 'Enter') {
 
             addToList(e.target.value);
 
@@ -185,7 +189,7 @@ $(document).ready(function() {
 
             localStorage.setItem('todo-list', JSON.stringify(todoList));
         } 
-    }
+    };
 
     $('#todos-wrapper h3').click(function(){
 
@@ -193,33 +197,35 @@ $(document).ready(function() {
         if (todoList !== null && todoList !== '' && todoList !== "[]") {
             $('#todo-list-wrapper').html('');
             createTodoItem(todoList);
-            $('#todo-list').fadeIn();
+            // $('#todo-list').fadeIn();
+            $('#todo-list').slideToggle(200);
             $('#no-todos').hide();
-
             $('.todo-item .delete-icon').click(function() {
                 let todoList = JSON.parse(localStorage['todo-list']);
                 todoList.map((item, pos, arr2) => {
                     if ($(this).parent().index() === pos) {
                         arr2.splice(pos, 1);
-                        $(this).parent().fadeOut(function(){$(this).parent().remove()});
+                        $(this).parent().fadeOut(function(){$(this).remove()});
                     }
                 });
                 localStorage.setItem('todo-list', JSON.stringify(todoList));
             });
+
         } else {
-            $('#no-todos').css('display', 'flex').hide().fadeIn();
+            $('#no-todos').slideToggle('medium').css('display', 'flex');
         }
-        // $('#todo-list').toggle();
+
     });
 
     $("#add-first-todo").click(function(){
+        $('#todo-list').fadeIn();
+        $('#no-todos').hide();
+
         let todoList = localStorage.getItem('todo-list');
-        if (todoList === "[]") {
+        if (todoList === null || todoList === "[]") {
             $('#todo-list-wrapper').html('');
         }
 
-        $('#todo-list').fadeIn();
-        $('#no-todos').hide();
     });
     // Working with aside todo list - END
 
