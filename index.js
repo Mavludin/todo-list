@@ -1,4 +1,4 @@
-$(document).ready(function() { 
+$(document).ready(function() {
 
     // Setting up time, greetings, and backgrounds - START
     let currentDate = new Date();
@@ -118,50 +118,68 @@ $(document).ready(function() {
         $('#major-todo-wrapper').fadeIn();
         $('#major-todo').val('');
     });
-
     // Working with major todo list - END
 
     // Working with aside todo list - START
-    const createTodoItem = arr => {
-        arr = JSON.parse(arr);
-        arr.map((item,pos,arr2) => {
+    const createTodoItem = (obj, pos) => {
             let div = document.createElement('div');
             div.className = "todo-item";
             let label = document.createElement('label');
+
             let input = document.createElement('input');
             input.type = 'checkbox';
+
             let par = document.createElement('p');
             par.className = 'todo-text';
-            par.innerHTML = item.itemName;
+            par.innerHTML = obj.itemName;
+
             let i = document.createElement('i');
             i.className = 'far fa-trash-alt delete-icon';
+
+            if (obj.completed) {
+                input.checked = true;
+                par.classList.add('todo-item-completed');
+            } else {
+                input.checked = false;
+                par.classList.remove('todo-item-completed');
+            }
+
+            input.onchange = e => {
+                let todoList = ifTodoListNotEmpty();
+                if (e.target.checked) {
+                    par.classList.add('todo-item-completed');
+                    todoList[pos].completed = true;
+                }
+                else {
+                    par.classList.remove('todo-item-completed');
+                    todoList[pos].completed = false;
+                }
+                localStorage.setItem('todo-list', JSON.stringify(todoList));
+            };
+
+            i.onclick = () => {
+                let todoList = ifTodoListNotEmpty();
+                    div.remove();
+                    todoList.splice(pos, 1);
+                    if (todoList.length > 0) localStorage.setItem('todo-list', JSON.stringify(todoList));
+                    else localStorage.removeItem('todo-list');
+            };
+
             label.appendChild(input);
             label.appendChild(par);
             div.appendChild(label);
             div.appendChild(i);
 
-            $('#todo-list-wrapper').append(div);
+            return div;
+    };
 
-            input.onchange = e => {
-                if (e.target.checked) {
-                    item.completed = true;
-                    par.classList.add('todo-item-completed');
-                }
-                else {
-                    par.classList.remove('todo-item-completed');
-                    item.completed = false;
-                }
-            }
+    const ifTodoListNotEmpty = () => {
 
-            // if (item.condition == 1) {
-            //     par.classList.add('todo-item-completed');
-            //     input.checked = true;
-            // }
-            // else { 
-            //     par.classList.remove('todo-item-completed'); 
-            // }
-        });
-
+        let todoList = localStorage.getItem('todo-list');
+        if (todoList !== null && todoList !== '') {
+            todoList = JSON.parse(todoList);
+        }
+        return todoList;
     };
 
     $('#new-todo').keyup(function(e) {
@@ -169,9 +187,12 @@ $(document).ready(function() {
 
             addToList(e.target.value);
 
-            let todoList = localStorage.getItem('todo-list');
             $('#todo-list-wrapper').html('');
-            createTodoItem(todoList);
+
+            let todoList = JSON.parse(localStorage['todo-list']);
+            todoList.map(item => {
+                $('#todo-list-wrapper').append(createTodoItem(item));
+            });
 
             e.target.value = "";
         }
@@ -184,50 +205,35 @@ $(document).ready(function() {
             else {
                 todoList = JSON.parse(localStorage['todo-list']);
             }
-
             todoList.push({'itemName':listItem, 'completed': false});
-
             localStorage.setItem('todo-list', JSON.stringify(todoList));
         } 
     };
 
     $('#todos-wrapper h3').click(function(){
 
-        let todoList = localStorage.getItem('todo-list');
-        if (todoList !== null && todoList !== '' && todoList !== "[]") {
+        let todoList = ifTodoListNotEmpty();
+        if (todoList) {
             $('#todo-list-wrapper').html('');
-            createTodoItem(todoList);
-            // $('#todo-list').fadeIn();
+            todoList.map((item,pos) => {
+                $('#todo-list-wrapper').append(createTodoItem(item,pos));
+            });
             $('#no-todos').hide();
             $('#todo-list').slideToggle(200);
-            $('.todo-item .delete-icon').click(function() {
-                let todoList = JSON.parse(localStorage['todo-list']);
-                todoList.map((item, pos, arr2) => {
-                    if ($(this).parent().index() === pos) {
-                        arr2.splice(pos, 1);
-                        $(this).parent().fadeOut(function(){$(this).remove()});
-                    }
-                });
-                localStorage.setItem('todo-list', JSON.stringify(todoList));
-            });
-
         } else {
             $('#todo-list').hide();
             $('#no-todos').slideToggle('medium').css('display', 'flex');
         }
-
     });
 
     $("#add-first-todo").click(function(){
         $('#todo-list').fadeIn();
         $('#no-todos').hide();
 
-        let todoList = localStorage.getItem('todo-list');
-        if (todoList === null || todoList === "[]") {
+        let todoList = ifTodoListNotEmpty();
+        if (!todoList) {
             $('#todo-list-wrapper').html('');
         }
-
     });
     // Working with aside todo list - END
-
 });
