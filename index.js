@@ -144,12 +144,12 @@ $(document).ready(function() {
 
             input.onchange = e => {
                 if (e.target.checked) {
+                    item.completed = true;
                     par.classList.add('todo-item-completed');
-                    item.condition = 1;
                 }
                 else {
                     par.classList.remove('todo-item-completed');
-                    item.condition = 0;
+                    item.completed = false;
                 }
             }
 
@@ -185,7 +185,7 @@ $(document).ready(function() {
                 todoList = JSON.parse(localStorage['todo-list']);
             }
 
-            todoList.push({'itemName':listItem});
+            todoList.push({'itemName':listItem, 'completed': false});
 
             localStorage.setItem('todo-list', JSON.stringify(todoList));
         } 
@@ -198,8 +198,8 @@ $(document).ready(function() {
             $('#todo-list-wrapper').html('');
             createTodoItem(todoList);
             // $('#todo-list').fadeIn();
-            $('#todo-list').slideToggle(200);
             $('#no-todos').hide();
+            $('#todo-list').slideToggle(200);
             $('.todo-item .delete-icon').click(function() {
                 let todoList = JSON.parse(localStorage['todo-list']);
                 todoList.map((item, pos, arr2) => {
@@ -212,6 +212,7 @@ $(document).ready(function() {
             });
 
         } else {
+            $('#todo-list').hide();
             $('#no-todos').slideToggle('medium').css('display', 'flex');
         }
 
