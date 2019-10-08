@@ -1,4 +1,27 @@
-$(document).ready(function() {
+$(function() {
+
+    // Getting current geolocation - START
+    navigator.geolocation.getCurrentPosition(
+        function( position ){ // success
+
+            var lat = position.coords.latitude;
+            var lng = position.coords.longitude;
+            var google_map_pos = new google.maps.LatLng( lat, lng );
+            var google_maps_geocoder = new google.maps.Geocoder();
+            google_maps_geocoder.geocode(
+                { 'latLng': google_map_pos },
+                function( results, status ) {
+                    if ( status == google.maps.GeocoderStatus.OK && results) {
+                        $('#geo').html(results[0].address_components[4].short_name);
+                    }
+                }
+            );
+        },
+        function(){ // error
+          console.log('Error');
+        }
+    );
+    // Getting current geolocation - END
 
     // Setting up time, greetings, and backgrounds - START
     let currentDate = new Date();
@@ -236,4 +259,5 @@ $(document).ready(function() {
         }
     });
     // Working with aside todo list - END
+    
 });
