@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat:300i,400,700,700i&display=swap');
+
 body {
     margin: 0;
     font-family: 'Open Sans', sans-serif;
@@ -99,9 +101,23 @@ input {
 }
 
 #weather-info {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2em;
+    line-height: 1;
     position: absolute;
     top: 16px;
     right: 24px;
+    text-align: right;
+    cursor: pointer;
+
+    border-radius: 5px;
+    padding: 5px;
+
+    transition: all 0.2s linear;
+}
+
+#weather-info:hover {
+    background-color: rgba(0,0,0,0.1);
 }
 
 #weather-info > div > img {
@@ -119,6 +135,16 @@ input {
 #weather-info > div > p {
     text-align: right;
     margin-top: -18px;
+    margin-right: 8px;
+}
+
+#weather-notification p {
+    margin-bottom: 0;
+    color: red;
+}
+
+#temperature-value {
+    cursor: pointer;
 }
 
 #todos-wrapper {
